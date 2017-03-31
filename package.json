@@ -1,0 +1,19 @@
+{
+  "name": "duo_web_sdk",
+  "version": "2.5",
+  "description": "Provides the Duo Web Javascript in an ES6 module format that can be installed via npm and bundled into your web application.",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "keywords": [
+    "Duo Security",
+    "Two-Factor Authentication"
+  ],
+  "author": "Duo Security",
+  "licenses": [
+    {
+      "type": "Duo License",
+      "url": "https://github.com/duosecurity/duo_web_client/blob/master/LICENSE"
+    }
+  ]
+}

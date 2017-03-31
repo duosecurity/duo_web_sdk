@@ -1,0 +1,19 @@
+{
+  "name": "react-duo-demo",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "body-parser": "1.17.1",
+    "duo_web": "^1.0.2",
+    "duo_web_sdk": "https://github.com/duosecurity/duo_web_sdk.git",
+    "express": "4.15.2",
+    "react": "15.5.3",
+    "react-dom": "15.5.3",
+    "react-scripts": "0.9.5",
+    "whatwg-fetch": "2.0.3"
+  },
+  "scripts": {
+    "start": "node server",
+    "build": "react-scripts build"
+  }
+}

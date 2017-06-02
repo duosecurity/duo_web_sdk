@@ -1,13 +1,14 @@
 {
   "name": "duo_web_sdk",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Provides the Duo Web Javascript in an ES6 module format that can be installed via npm and bundled into your web application.",
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
-    "chai": "^3.5.0",
-    "jsdom": "^10.0.0",
-    "mocha": "^3.3.0"
+    "chai": "3.5.0",
+    "jsdom": "10.0.0",
+    "mocha": "3.3.0",
+    "sinon": "2.3.0"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha"

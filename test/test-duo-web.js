@@ -1,5 +1,6 @@
 const Duo = require('../index');
 const chai = require('chai');
+const sinon = require('sinon');
 const assert = chai.assert;
 
 describe('Duo Web', function() {
@@ -136,5 +137,144 @@ describe('Duo Web', function() {
                 data: 'buttercakes'
             }));
         });
+    });
+
+    describe('open Duo window', function() {
+        beforeEach(function() {
+            Duo.init({
+                host: 'example.com',
+            });
+
+            const OriginalMessageEvent = window.MessageEvent;
+            sinon.stub(window, "MessageEvent").callsFake(function(type, args) {
+                if (type === "message") {
+                    args.origin = 'https://example.com';
+                    return new OriginalMessageEvent(type, args);
+                } else {
+                    return new OriginalMessageEvent(type, args);
+                }
+            });
+
+            sinon.stub(window, "open");
+        });
+
+        afterEach(function() {
+            window.MessageEvent.restore();
+            window.open.restore();
+        });
+
+        function _checkWindowOpenness(expectedUrl, didOpen, done) {
+            window.postMessage('DUO_OPEN_WINDOW|' + expectedUrl, '*');
+
+            // We need to setTimeout here to allow the window.message handlers
+            // the ability to gain control of the thread and do their work.
+            // window.postMessage is async in the JSDOM lib we are using
+            setTimeout(function() {
+                if (didOpen) {
+                    const [url, target] = window.open.getCall(0).args;
+                    assert.equal(url, expectedUrl);
+                    assert.equal(target, '_self');
+                } else {
+                    assert.notOk(window.open.called);
+                }
+                done();
+            }, 0);
+        }
+        function assertWindowDidOpen(expectedUrl, done) {
+            _checkWindowOpenness(expectedUrl, true, done);
+        }
+        function assertWindowDidNotOpen(expectedUrl, done) {
+            _checkWindowOpenness(expectedUrl, false, done);
+        }
+
+        it('should attempt window open for duotrustedendpoints://', function(done) {
+            assertWindowDidOpen('duotrustedendpoints://duo.com?x=1&y=2', done);
+        });
+
+        it('should allow https://duo.com', function(done) {
+            assertWindowDidOpen("https://duo.com", done);
+        });
+        it('should allow https://something.duo.com', function(done) {
+            assertWindowDidOpen("https://something.duo.com", done);
+        });
+        it('should allow https://something.duo.com/', function(done) {
+            assertWindowDidOpen("https://something.duo.com/", done);
+        });
+        it('should allow https://something.duo.com/?akey=123', function(done) {
+            assertWindowDidOpen("https://something.duo.com/?akey=123", done);
+        });
+        it('should allow https://something.duo.com?akey=123', function(done) {
+            assertWindowDidOpen("https://something.duo.com?akey=123", done);
+        });
+        it('should allow https://abc-123.something.else.duo.com?akey=123', function(done) {
+            assertWindowDidOpen("https://abc-123.something.else.duo.com?akey=123", done);
+        });
+
+        it('should allow valid https://duosecurity.com', function(done) {
+            assertWindowDidOpen("https://duosecurity.com", done);
+        });
+        it('should allow https://something.duosecurity.com', function(done) {
+            assertWindowDidOpen("https://something.duosecurity.com", done);
+        });
+        it('should allow https://something.duosecurity.com/', function(done) {
+            assertWindowDidOpen("https://something.duosecurity.com/", done);
+        });
+        it('should allow https://something.duosecurity.com/?akey=123', function(done) {
+            assertWindowDidOpen("https://something.duosecurity.com/?akey=123", done);
+        });
+        it('should allow https://something.duosecurity.com?akey=123', function(done) {
+            assertWindowDidOpen("https://something.duosecurity.com?akey=123", done);
+        });
+        it('should allow https://abc-123.something.else.duosecurity.com?akey=123', function(done) {
+            assertWindowDidOpen("https://abc-123.something.else.duosecurity.com?akey=123", done);
+        });
+
+        it('should allow https://duomobile.s3-us-west-1.amazonaws.com', function(done) {
+            assertWindowDidOpen("https://duomobile.s3-us-west-1.amazonaws.com", done);
+        });
+        it('should allow https://something.duomobile.s3-us-west-1.amazonaws.com', function(done) {
+            assertWindowDidOpen("https://something.duomobile.s3-us-west-1.amazonaws.com", done);
+        });
+        it('should allow https://something.duomobile.s3-us-west-1.amazonaws.com/', function(done) {
+            assertWindowDidOpen("https://something.duomobile.s3-us-west-1.amazonaws.com/", done);
+        });
+        it('should allow https://something.duomobile.s3-us-west-1.amazonaws.com/?akey=123', function(done) {
+            assertWindowDidOpen("https://something.duomobile.s3-us-west-1.amazonaws.com/?akey=123", done);
+        });
+        it('should allow https://something.duomobile.s3-us-west-1.amazonaws.com?akey=123', function(done) {
+            assertWindowDidOpen("https://something.duomobile.s3-us-west-1.amazonaws.com?akey=123", done);
+        });
+        it('should allow https://abc-123.something.else.duomobile.s3-us-west-1.amazonaws.com?akey=123', function(done) {
+            assertWindowDidOpen("https://abc-123.something.else.duomobile.s3-us-west-1.amazonaws.com?akey=123", done);
+        });
+
+        it('should prevent javascript:alert(1)', function(done) {
+            assertWindowDidNotOpen("javascript:alert(1)", done);
+        });
+        it('should prevent http://duo.com', function(done) {
+            assertWindowDidNotOpen("http://duo.com/", done);
+        });
+        it('should prevent https://attackers.site/?fake=duo.com', function(done) {
+            assertWindowDidNotOpen("https://attackers.site/?fake=duo.com", done);
+        });
+        it('should prevent https://duo.co/', function(done) {
+            assertWindowDidNotOpen("https://duo.co/", done);
+        });
+        it('should prevent https://duo.com.attack.io/', function(done) {
+            assertWindowDidNotOpen("https://duo.com.attack.io/", done);
+        });
+        it('should prevent https://attack.io/duo.com', function(done) {
+            assertWindowDidNotOpen("https://attack.io/duo.com", done);
+        });
+        it('should prevent https://attack.io?maybe=duo.com', function(done) {
+            assertWindowDidNotOpen("https://attack.io?maybe=duo.com", done);
+        });
+        it('should prevent https://iamnotduo.com/', function(done) {
+            assertWindowDidNotOpen("https://iamnotduo.com/", done);
+        });
+        it('should prevent https://i.totally.am.notduo.com/', function(done) {
+            assertWindowDidNotOpen("https://i.totally.am.notduo.com/", done);
+        });
+
     });
 });

@@ -27,6 +27,12 @@
 }(this, function() {
     var DUO_MESSAGE_FORMAT = /^(?:AUTH|ENROLL)+\|[A-Za-z0-9\+\/=]+\|[A-Za-z0-9\+\/=]+$/;
     var DUO_ERROR_FORMAT = /^ERR\|[\w\s\.\(\)]+$/;
+    var DUO_OPEN_WINDOW_FORMAT = /^DUO_OPEN_WINDOW\|/;
+    var VALID_OPEN_WINDOW_DOMAINS = [
+        'duo.com',
+        'duosecurity.com',
+        'duomobile.s3-us-west-1.amazonaws.com'
+    ];
 
     var iframeId = 'duo_iframe',
         postAction = '',
@@ -171,7 +177,8 @@
             typeof event.data === 'string' &&
             (
                 event.data.match(DUO_MESSAGE_FORMAT) ||
-                event.data.match(DUO_ERROR_FORMAT)
+                event.data.match(DUO_ERROR_FORMAT) ||
+                event.data.match(DUO_OPEN_WINDOW_FORMAT)
             )
         );
     }
@@ -278,12 +285,50 @@
      */
     function onReceivedMessage(event) {
         if (isDuoMessage(event)) {
-            // the event came from duo, do the post back
-            doPostBack(event.data);
+            if (event.data.match(DUO_OPEN_WINDOW_FORMAT)) {
+                var url = event.data.substring("DUO_OPEN_WINDOW|".length);
+                if (isValidUrlToOpen(url)) {
+                    // Open the URL that comes after the DUO_WINDOW_OPEN token.
+                    window.open(url, "_self");
+                }
+            }
+            else {
+                // the event came from duo, do the post back
+                doPostBack(event.data);
 
-            // always clean up after yourself!
-            offMessage(onReceivedMessage);
+                // always clean up after yourself!
+                offMessage(onReceivedMessage);
+            }
         }
+    }
+
+    /**
+     * Validate that this passed in URL is one that we will actually allow to
+     * be opened.
+     * @param url String URL that the message poster wants to open
+     * @returns {boolean} true if we allow this url to be opened in the window
+     */
+    function isValidUrlToOpen(url) {
+        if (!url) {
+            return false;
+        }
+
+        var parser = document.createElement('a');
+        parser.href = url;
+
+        if (parser.protocol === "duotrustedendpoints:") {
+            return true;
+        } else if (parser.protocol !== "https:") {
+            return false;
+        }
+
+        for (var i = 0; i < VALID_OPEN_WINDOW_DOMAINS.length; i++) {
+           if (parser.hostname.endsWith("." + VALID_OPEN_WINDOW_DOMAINS[i]) ||
+                   parser.hostname === VALID_OPEN_WINDOW_DOMAINS[i]) {
+               return true;
+           }
+        }
+        return false;
     }
 
     /**
@@ -330,7 +375,7 @@
         iframe.src = [
             'https://', host, '/frame/web/v1/auth?tx=', duoSig,
             '&parent=', encodeURIComponent(document.location.href),
-            '&v=2.5'
+            '&v=2.6'
         ].join('');
 
         // listen for the 'message' event

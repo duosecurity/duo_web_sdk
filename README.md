@@ -1,5 +1,7 @@
 # Overview
 
+[![Build Status](https://travis-ci.org/duosecurity/duo_web_sdk.svg?branch=master)](https://travis-ci.org/duosecurity/duo_web_sdk)
+
 **duo_web_sdk** - Provides the [Duo Web Javascript](https://duo.com/docs/duoweb) in an ES6 module format that can be installed via npm/yarn and bundled into your web application.
 
 ## Installation

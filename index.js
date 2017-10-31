@@ -255,20 +255,15 @@
             }
         }
 
-        // if we were given an iframe, no need to wait for the rest of the DOM
+        // try to find the iframe in the DOM
+        iframe = document.getElementById(iframeId);
+
+        // iframe is in the DOM, away we go!
         if (iframe) {
             ready();
         } else {
-            // try to find the iframe in the DOM
-            iframe = document.getElementById(iframeId);
-
-            // iframe is in the DOM, away we go!
-            if (iframe) {
-                ready();
-            } else {
-                // wait until the DOM is ready, then try again
-                onReady(onDOMReady);
-            }
+            // wait until the DOM is ready, then try again
+            onReady(onDOMReady);
         }
 
         // always clean up after yourself!

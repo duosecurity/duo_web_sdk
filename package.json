@@ -18,10 +18,6 @@
     "Two-Factor Authentication"
   ],
   "author": "Duo Security",
-  "licenses": [
-    {
-      "type": "Duo License",
-      "url": "https://github.com/duosecurity/duo_web_client/blob/master/LICENSE"
-    }
-  ]
+  "license": "SEE LICENSE IN LICENSE",
+  "homepage": "https://duo.com"
 }

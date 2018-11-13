@@ -247,6 +247,7 @@
                     iframe = options.iframe;
                 } else if (typeof options.iframe === 'string') {
                     iframeId = options.iframe;
+                    iframe = document.getElementById(iframeId);
                 }
             }
 

@@ -247,16 +247,14 @@
                     iframe = options.iframe;
                 } else if (typeof options.iframe === 'string') {
                     iframeId = options.iframe;
+                    iframe = document.getElementById(iframeId);
                 }
             }
 
             if (typeof options.submit_callback === 'function') {
                 submitCallback = options.submit_callback;
             }
-        }
-
-        // try to find the iframe in the DOM
-        iframe = document.getElementById(iframeId);
+        }        
 
         // iframe is in the DOM, away we go!
         if (iframe) {

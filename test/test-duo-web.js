@@ -9,13 +9,17 @@ describe('Duo Web', function() {
          /* Dummy sig_request, passes validation. */
         var sig_request = 'AUTH|duo_sig:app_sig';
 
-        beforeEach(function() {
+        function addIframe() {
             /* Create some document elements that doPostBack expects. */
             iframe = document.createElement('iframe');
             var form = document.createElement('duo_form');
             form.id = 'duo_form';
             document.head.appendChild(iframe);
             iframe.appendChild(form);
+        }
+
+        beforeEach(function() {
+            addIframe();
         });
 
         it('Should totes work with submitCallback', function() {
@@ -34,6 +38,18 @@ describe('Duo Web', function() {
             assert.isTrue(submitCallbackCalled);
         });
 
+        it('should include the host in the src', function() {
+            var host = 'this-is-a-host.example';
+
+            Duo.init({
+                host: host,
+                iframe: iframe,
+                sig_request: sig_request
+            });
+
+            assert.include(iframe.src, host);
+        });
+
         it('should URI encode the parent URL', function() {
             Duo.init({
                 host: 'example.com',
@@ -48,6 +64,82 @@ describe('Duo Web', function() {
                 iframe.src, 'parent=https://',
                 'should URI encode the parent href')
         })
+
+        describe('Calling init() a second time', function() {
+            it('Should overwrite the old callback', function() {
+                var firstSubmitCallbackCalled = false;
+                var secondSubmitCallbackCalled = false;
+
+                Duo.init({
+                    host: 'example.com',
+                    iframe: iframe,
+                    sig_request: sig_request,
+                    submit_callback: function() {
+                        firstSubmitCallbackCalled = true;
+                    }
+                });
+
+                Duo.init({
+                    host: 'example.com',
+                    iframe: iframe,
+                    sig_request: sig_request,
+                    submit_callback: function() {
+                        secondSubmitCallbackCalled = true;
+                    }
+                });
+
+                Duo._doPostBack("Great Success!");
+
+                assert.isFalse(
+                    firstSubmitCallbackCalled,
+                    'did not overwrite the previous callback'
+                );
+                assert.isTrue(
+                    secondSubmitCallbackCalled,
+                    'did not call the new callback'
+                );
+            });
+
+            it('Should overwrite the iframe src', function() {
+                const firstHostName = 'first-host.example';
+                const secondHostName = 'second-host.example';
+                const thirdHostName = 'third-host.example';
+
+                // Initialize with one host
+                Duo.init({
+                    host: firstHostName,
+                    iframe: iframe,
+                    sig_request: sig_request
+                });
+
+                // Initialize with a different host
+                Duo.init({
+                    host: secondHostName,
+                    iframe: iframe,
+                    sig_request: sig_request
+                });
+
+                assert.include(
+                    iframe.src, secondHostName,
+                    'did not change the src on the second init'
+                );
+
+
+                // Create a new iframe and initialze again to make sure the new
+                // iframe is targeted.
+                addIframe();
+                Duo.init({
+                    host: thirdHostName,
+                    iframe: iframe,
+                    sig_request: sig_request
+                });
+
+                assert.include(
+                    iframe.src, thirdHostName,
+                    'did not change the src on the third init'
+                );
+            });
+        });
     });
 
     describe('parseSigRequest', function() {

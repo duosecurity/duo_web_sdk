@@ -34,15 +34,35 @@
         'duomobile.s3-us-west-1.amazonaws.com'
     ];
 
-    var iframeId = 'duo_iframe',
-        postAction = '',
-        postArgument = 'sig_response',
+    var iframeId,
+        postAction,
+        postArgument,
         host,
         sigRequest,
         duoSig,
         appSig,
         iframe,
         submitCallback;
+
+    // We use this function instead of setting initial values in the var
+    // declarations to make sure the initial values and subsequent
+    // re-initializations are always the same.
+    initializeStatefulVariables();
+
+    /**
+     * Set local variables to whatever they should be before you call init().
+     */
+    function initializeStatefulVariables() {
+        iframeId = 'duo_iframe';
+        postAction = '';
+        postArgument = 'sig_response';
+        host = undefined;
+        sigRequest = undefined;
+        duoSig = undefined;
+        appSig = undefined;
+        iframe = undefined;
+        submitCallback = undefined;
+    }
 
     function throwError(message, url) {
         throw new Error(
@@ -225,6 +245,12 @@
      *                                                        submit_callback can be used to prevent the webpage from reloading.
      */
     function init(options) {
+        // If init() is called more than once we have to reset all the local
+        // variables to ensure init() will work the same way every time. This
+        // helps people making single page applications. SPAs may periodically
+        // remove the iframe and add a new one that has to be initialized.
+        initializeStatefulVariables();
+
         if (options) {
             if (options.host) {
                 host = options.host;
@@ -375,7 +401,7 @@
         iframe.src = [
             'https://', host, '/frame/web/v1/auth?tx=', duoSig,
             '&parent=', encodeURIComponent(document.location.href),
-            '&v=2.6'
+            '&v=2.7'
         ].join('');
 
         // listen for the 'message' event

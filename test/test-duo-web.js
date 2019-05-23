@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const assert = chai.assert;
 
 describe('Duo Web', function() {
-    describe('init', function() {
+    describe('init using an iframe', function() {
         var iframe;
          /* Dummy sig_request, passes validation. */
         var sig_request = 'AUTH|duo_sig:app_sig';
@@ -22,6 +22,33 @@ describe('Duo Web', function() {
             addIframe();
         });
 
+        it('Errors if you give it a non-iframe', function() {
+            var div = document.createElement('div');
+            document.head.appendChild(div);
+
+            assert.throws(
+                function() { Duo.init({host: 'example.com', iframe: div}); },
+                '`iframe` only accepts an iframe element'
+            );
+        });
+
+        it('Errors if you set iframe and iframeContainer', function() {
+            var div = document.createElement('div');
+            document.head.appendChild(div);
+
+            assert.throws(
+                function() {
+                    Duo.init({
+                        host: 'example.com',
+                        iframeContainer: div,
+                        iframe: iframe
+                    });
+                },
+                'Passing both `iframe` and `iframeContainer` arguments at the' +
+                ' same time is not allowed.'
+            );
+        });
+
         it('Should totes work with submitCallback', function() {
             var submitCallbackCalled = false;
             Duo.init({
@@ -31,7 +58,7 @@ describe('Duo Web', function() {
                 submit_callback: function() {
                     submitCallbackCalled = true;
                 }
-            })
+            });
 
             Duo._doPostBack("Great Success!");
             /* Ensure our callback was called :) */
@@ -55,15 +82,15 @@ describe('Duo Web', function() {
                 host: 'example.com',
                 iframe: iframe,
                 sig_request: sig_request
-            })
+            });
 
             assert.notInclude(
                 iframe.src, 'parent=http://',
-                'should URI encode the parent href')
+                'should URI encode the parent href');
             assert.notInclude(
                 iframe.src, 'parent=https://',
-                'should URI encode the parent href')
-        })
+                'should URI encode the parent href');
+        });
 
         describe('Calling init() a second time', function() {
             it('Should overwrite the old callback', function() {
@@ -138,6 +165,187 @@ describe('Duo Web', function() {
                     iframe.src, thirdHostName,
                     'did not change the src on the third init'
                 );
+            });
+        });
+    });
+
+    describe('init using another element', function() {
+        var wrapper;
+         /* Dummy sig_request, passes validation. */
+        var sig_request = 'AUTH|duo_sig:app_sig';
+
+        function addIframeWrapper(wrapperTagName) {
+            /* Create some document elements that doPostBack expects. */
+            wrapper = document.createElement(wrapperTagName);
+            const form = document.createElement('duo_form');
+            form.id = 'duo_form';
+            document.head.appendChild(wrapper);
+            wrapper.appendChild(form);
+        }
+
+        beforeEach(function() {
+            addIframeWrapper('div');
+        });
+
+        it('Errors if you give it an iframe', function() {
+            var iframe = document.createElement('iframe');
+            document.head.appendChild(iframe);
+
+            assert.throws(
+                function() { Duo.init({host: 'example.com', iframeContainer: iframe}); },
+                '`iframeContainer` only accepts a non-iframe element'
+            );
+        });
+
+        it('Should totes work with submitCallback', function() {
+            var submitCallbackCalled = false;
+            Duo.init({
+                host: 'example.com',
+                iframeContainer: wrapper,
+                sig_request: sig_request,
+                submit_callback: function() {
+                    submitCallbackCalled = true;
+                }
+            });
+
+            Duo._doPostBack("Great Success!");
+            /* Ensure our callback was called :) */
+            assert.isTrue(submitCallbackCalled);
+        });
+
+        it('should include the host in the src of the iframe that was added', function() {
+            const host = 'this-is-a-host.example';
+
+            Duo.init({
+                host: host,
+                iframeContainer: wrapper,
+                sig_request: sig_request
+            });
+
+            const iframe = wrapper.querySelector("iframe");
+
+            assert.include(iframe.src, host);
+        });
+
+        it('should allow setting iframeAttributes', function() {
+            const givenTitle = "Example New Duo Prompt Title";
+            const givenAllows = "stuff and more stuff";
+            const givenWidth = "400";
+            const givenHeight = "600";
+
+            Duo.init({
+                host: "example.com",
+                sig_request: sig_request,
+                iframeContainer: wrapper,
+                iframeAttributes: {
+                    title: givenTitle,
+                    allows: givenAllows,
+                    width: givenWidth,
+                    height: givenHeight
+                }
+            });
+
+            const iframe = wrapper.querySelector("iframe");
+
+            assert.equal(iframe.getAttribute('title'), givenTitle);
+            assert.equal(iframe.getAttribute('allows'), givenAllows);
+            assert.equal(iframe.getAttribute('width'), givenWidth);
+            assert.equal(iframe.getAttribute('height'), givenHeight);
+        });
+
+        it('should URI encode the parent URL', function() {
+            Duo.init({
+                host: 'example.com',
+                iframeContainer: wrapper,
+                sig_request: sig_request
+            });
+
+            const iframe = wrapper.querySelector("iframe");
+
+            assert.notInclude(
+                iframe.src, 'parent=http://',
+                'should URI encode the parent href');
+            assert.notInclude(
+                iframe.src, 'parent=https://',
+                'should URI encode the parent href');
+        });
+
+        describe('Calling init() a second time', function() {
+            it('Should overwrite the old callback', function() {
+                var firstSubmitCallbackCalled = false;
+                var secondSubmitCallbackCalled = false;
+
+                Duo.init({
+                    host: 'example.com',
+                    iframeContainer: wrapper,
+                    sig_request: sig_request,
+                    submit_callback: function() {
+                        firstSubmitCallbackCalled = true;
+                    }
+                });
+
+                Duo.init({
+                    host: 'example.com',
+                    iframeContainer: wrapper,
+                    sig_request: sig_request,
+                    submit_callback: function() {
+                        secondSubmitCallbackCalled = true;
+                    }
+                });
+
+                Duo._doPostBack("Great Success!");
+
+                assert.isFalse(
+                    firstSubmitCallbackCalled,
+                    'did not overwrite the previous callback'
+                );
+                assert.isTrue(
+                    secondSubmitCallbackCalled,
+                    'did not call the new callback'
+                );
+            });
+
+            it('Should replace the iframe with a new one', function() {
+                const firstHostName = 'first-host.example';
+                const secondHostName = 'second-host.example';
+                const thirdHostName = 'third-host.example';
+
+                // Initialize with one host
+                Duo.init({
+                    host: firstHostName,
+                    iframeContainer: wrapper,
+                    sig_request: sig_request
+                });
+
+                const firstIframe = wrapper.querySelector("iframe");
+
+                // Initialize with a different host
+                Duo.init({
+                    host: secondHostName,
+                    iframeContainer: wrapper,
+                    sig_request: sig_request
+                });
+
+                // Make sure we aren't just appending new iframes every time
+                assert.equal(wrapper.querySelectorAll("iframe").length, 1);
+
+                const secondIframe = wrapper.querySelector("iframe");
+
+                // Make sure we added a new iframe and didn't mutate the old one.
+                assert.notEqual(firstIframe, secondIframe);
+
+                // Create a new wrapper and initialze again to make sure the new
+                // wrapper is targeted.
+                addIframeWrapper();
+                Duo.init({
+                    host: thirdHostName,
+                    iframeContainer: wrapper,
+                    sig_request: sig_request
+                });
+
+                const thirdIframe = wrapper.querySelector("iframe");
+
+                assert.notEqual(secondIframe, thirdIframe);
             });
         });
     });
@@ -272,9 +480,11 @@ describe('Duo Web', function() {
                 done();
             }, 0);
         }
+
         function assertWindowDidOpen(expectedUrl, done) {
             _checkWindowOpenness(expectedUrl, true, done);
         }
+
         function assertWindowDidNotOpen(expectedUrl, done) {
             _checkWindowOpenness(expectedUrl, false, done);
         }

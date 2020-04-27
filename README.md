@@ -1,6 +1,10 @@
 # Overview
 
 [![Build Status](https://travis-ci.org/duosecurity/duo_web_sdk.svg?branch=master)](https://travis-ci.org/duosecurity/duo_web_sdk)
+[![Issues](https://img.shields.io/github/issues/duosecurity/duo_web_sdk)](https://github.com/duosecurity/duo_web_sdk/issues)
+[![Forks](https://img.shields.io/github/forks/duosecurity/duo_web_sdk)](https://github.com/duosecurity/duo_web_sdk/network/members)
+[![Stars](https://img.shields.io/github/stars/duosecurity/duo_web_sdk)](https://github.com/duosecurity/duo_web_sdk/stargazers)
+[![License](https://img.shields.io/badge/License-View%20License-orange)](https://github.com/duosecurity/duo_web_sdk/blob/master/LICENSE)
 
 **duo_web_sdk** - Provides the [Duo Web Javascript](https://duo.com/docs/duoweb) in an ES6 module format that can be installed via npm/yarn and bundled into your web application.
 

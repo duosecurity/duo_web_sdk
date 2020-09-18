@@ -14,6 +14,7 @@ Install `duo_web_sdk` from Github:
 
 - With NPM: `npm install https://github.com/duosecurity/duo_web_sdk.git --save`
 - With yarn: `yarn add https://github.com/duosecurity/duo_web_sdk.git`
+- For development: `npm install`
 
 ## Usage
 
@@ -33,6 +34,12 @@ DuoWebSDK.init({
 ```
 
 See the examples folder for a full implementation using React and Express.
+
+## Testing
+
+```
+$ npm test
+```
 
 ## Documentation
 

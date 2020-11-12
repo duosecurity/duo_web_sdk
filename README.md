@@ -1,6 +1,6 @@
 # Overview
 
-[![Build Status](https://travis-ci.org/duosecurity/duo_web_sdk.svg?branch=master)](https://travis-ci.org/duosecurity/duo_web_sdk)
+[![Build Status](https://github.com/duosecurity/duo_web_sdk/workflows/NodeJS%20CI/badge.svg)](https://github.com/duosecurity/duo_web_sdk/actions)
 [![Issues](https://img.shields.io/github/issues/duosecurity/duo_web_sdk)](https://github.com/duosecurity/duo_web_sdk/issues)
 [![Forks](https://img.shields.io/github/forks/duosecurity/duo_web_sdk)](https://github.com/duosecurity/duo_web_sdk/network/members)
 [![Stars](https://img.shields.io/github/stars/duosecurity/duo_web_sdk)](https://github.com/duosecurity/duo_web_sdk/stargazers)

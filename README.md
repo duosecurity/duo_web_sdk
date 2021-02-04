@@ -43,4 +43,4 @@ $ npm test
 
 ## Documentation
 
-General documentation on using Duo Web is [available here](https://duo.com/docs/duoweb). 
+General documentation on using Duo Web is [available here](https://duo.com/docs/duoweb-v2). 

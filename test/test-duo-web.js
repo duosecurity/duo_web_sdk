@@ -3,8 +3,8 @@ const chai = require('chai');
 const sinon = require('sinon');
 const assert = chai.assert;
 
-describe('Duo Web', function() {
-    describe('init using an iframe', function() {
+suite('Duo Web', function() {
+    suite('init using an iframe', function() {
         var iframe;
          /* Dummy sig_request, passes validation. */
         var sig_request = 'AUTH|duo_sig:app_sig';
@@ -18,11 +18,11 @@ describe('Duo Web', function() {
             iframe.appendChild(form);
         }
 
-        beforeEach(function() {
+        setup(function() {
             addIframe();
         });
 
-        it('Errors if you give it a non-iframe', function() {
+        test('Errors if you give it a non-iframe', function() {
             var div = document.createElement('div');
             document.head.appendChild(div);
 
@@ -32,7 +32,7 @@ describe('Duo Web', function() {
             );
         });
 
-        it('Errors if you set iframe and iframeContainer', function() {
+        test('Errors if you set iframe and iframeContainer', function() {
             var div = document.createElement('div');
             document.head.appendChild(div);
 
@@ -49,7 +49,7 @@ describe('Duo Web', function() {
             );
         });
 
-        it('Should totes work with submitCallback', function() {
+        test('Should totes work with submitCallback', function() {
             var submitCallbackCalled = false;
             Duo.init({
                 host: 'example.com',
@@ -65,7 +65,7 @@ describe('Duo Web', function() {
             assert.isTrue(submitCallbackCalled);
         });
 
-        it('should include the host in the src', function() {
+        test('should include the host in the src', function() {
             var host = 'this-is-a-host.example';
 
             Duo.init({
@@ -77,7 +77,7 @@ describe('Duo Web', function() {
             assert.include(iframe.src, host);
         });
 
-        it('should URI encode the parent URL', function() {
+        test('should URI encode the parent URL', function() {
             Duo.init({
                 host: 'example.com',
                 iframe: iframe,
@@ -92,8 +92,20 @@ describe('Duo Web', function() {
                 'should URI encode the parent href');
         });
 
-        describe('Calling init() a second time', function() {
-            it('Should overwrite the old callback', function() {
+        test('should URI encode the duoSig', function() {
+            Duo.init({
+                host: 'example.com',
+                iframe: iframe,
+                sig_request: 'AUTH|duo+sig:app_sig'
+            });
+
+            assert.notInclude(
+                iframe.src, 'duo+sig',
+                'should URI encode the duoSig href');
+        });
+
+        suite('Calling init() a second time', function() {
+            test('Should overwrite the old callback', function() {
                 var firstSubmitCallbackCalled = false;
                 var secondSubmitCallbackCalled = false;
 
@@ -127,7 +139,7 @@ describe('Duo Web', function() {
                 );
             });
 
-            it('Should overwrite the iframe src', function() {
+            test('Should overwrite the iframe src', function() {
                 const firstHostName = 'first-host.example';
                 const secondHostName = 'second-host.example';
                 const thirdHostName = 'third-host.example';
@@ -169,7 +181,7 @@ describe('Duo Web', function() {
         });
     });
 
-    describe('init using another element', function() {
+    suite('init using another element', function() {
         var wrapper;
          /* Dummy sig_request, passes validation. */
         var sig_request = 'AUTH|duo_sig:app_sig';
@@ -183,11 +195,12 @@ describe('Duo Web', function() {
             wrapper.appendChild(form);
         }
 
-        beforeEach(function() {
+        setup(function() {
             addIframeWrapper('div');
         });
 
-        it('Errors if you give it an iframe', function() {
+
+        test('Errors if you give it an iframe', function() {
             var iframe = document.createElement('iframe');
             document.head.appendChild(iframe);
 
@@ -197,7 +210,7 @@ describe('Duo Web', function() {
             );
         });
 
-        it('Should totes work with submitCallback', function() {
+        test('Should totes work with submitCallback', function() {
             var submitCallbackCalled = false;
             Duo.init({
                 host: 'example.com',
@@ -213,7 +226,7 @@ describe('Duo Web', function() {
             assert.isTrue(submitCallbackCalled);
         });
 
-        it('should include the host in the src of the iframe that was added', function() {
+        test('should include the host in the src of the iframe that was added', function() {
             const host = 'this-is-a-host.example';
 
             Duo.init({
@@ -227,7 +240,7 @@ describe('Duo Web', function() {
             assert.include(iframe.src, host);
         });
 
-        it('should allow setting iframeAttributes', function() {
+        test('should allow setting iframeAttributes', function() {
             const givenTitle = "Example New Duo Prompt Title";
             const givenAllows = "stuff and more stuff";
             const givenWidth = "400";
@@ -253,7 +266,7 @@ describe('Duo Web', function() {
             assert.equal(iframe.getAttribute('height'), givenHeight);
         });
 
-        it('should URI encode the parent URL', function() {
+        test('should URI encode the parent URL', function() {
             Duo.init({
                 host: 'example.com',
                 iframeContainer: wrapper,
@@ -270,8 +283,8 @@ describe('Duo Web', function() {
                 'should URI encode the parent href');
         });
 
-        describe('Calling init() a second time', function() {
-            it('Should overwrite the old callback', function() {
+        suite('Calling init() a second time', function() {
+            test('Should overwrite the old callback', function() {
                 var firstSubmitCallbackCalled = false;
                 var secondSubmitCallbackCalled = false;
 
@@ -305,7 +318,7 @@ describe('Duo Web', function() {
                 );
             });
 
-            it('Should replace the iframe with a new one', function() {
+            test('Should replace the iframe with a new one', function() {
                 const firstHostName = 'first-host.example';
                 const secondHostName = 'second-host.example';
                 const thirdHostName = 'third-host.example';
@@ -350,24 +363,24 @@ describe('Duo Web', function() {
         });
     });
 
-    describe('parseSigRequest', function() {
-        it('should return undefined if no token is passed', function() {
+    suite('parseSigRequest', function() {
+        test('should return undefined if no token is passed', function() {
             assert.isUndefined(Duo._parseSigRequest());
         });
 
-        it('should throw an error if an error message is passed', function() {
+        test('should throw an error if an error message is passed', function() {
             assert.throws(function() {
                 Duo._parseSigRequest('ERR|buttercakes');
             }, 'Duo Web SDK error: buttercakes');
         });
 
-        it('should throw an error if the token is invalid', function() {
+        test('should throw an error if the token is invalid', function() {
             assert.throws(function() {
                 Duo._parseSigRequest('AUTH|incomplete');
             }, /Duo was given a bad token/);
         });
 
-        it('should return the parsed sig request if the token is valid(ish)', function() {
+        test('should return the parsed sig request if the token is valid(ish)', function() {
             assert.deepEqual(Duo._parseSigRequest('AUTH|foo:bar'), {
                 sigRequest: 'AUTH|foo:bar',
                 duoSig: 'AUTH|foo',
@@ -376,14 +389,14 @@ describe('Duo Web', function() {
         });
     });
 
-    describe('isDuoMessage', function() {
-        beforeEach(function() {
+    suite('isDuoMessage', function() {
+        setup(function() {
             Duo.init({
                 host: 'example.com'
             });
         });
 
-        it('should return true for the correct origin and the correct format', function() {
+        test('should return true for the correct origin and the correct format', function() {
             assert.isTrue(Duo._isDuoMessage({
                 origin: 'https://example.com',
                 data: 'AUTH|aaabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+==|aaabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+=='
@@ -395,34 +408,34 @@ describe('Duo Web', function() {
             }), 'did not parse error format correctly');
         });
 
-        it('should fail messages that aren\'t AUTH or ENROLL', function() {
+        test('should fail messages that aren\'t AUTH or ENROLL', function() {
             assert.isFalse(Duo._isDuoMessage({
                 origin: 'https://example.com',
                 data: 'buttercakes|foo|bar'
             }));
         });
 
-        it('should fail messages that contain non-base64 symbols', function() {
+        test('should fail messages that contain non-base64 symbols', function() {
             assert.isFalse(Duo._isDuoMessage({
                 origin: 'https://example.com',
                 data: 'AUTH|#$*&|!@#$'
             }));
         });
 
-        it('should fail messages with additional segments', function() {
+        test('should fail messages with additional segments', function() {
             assert.isFalse(Duo._isDuoMessage({
                 origin: 'https://example.com',
                 data: 'AUTH|foo|bar|baz'
             }));
         });
 
-        it('should return false if the origin is bad', function() {
+        test('should return false if the origin is bad', function() {
             assert.isFalse(Duo._isDuoMessage({
                 origin: 'https://notexample.com'
             }));
         });
 
-        it('should return false if the event data is not a string', function() {
+        test('should return false if the event data is not a string', function() {
             assert.isFalse(Duo._isDuoMessage({
                 origin: 'https://example.com',
                 data: {
@@ -431,7 +444,7 @@ describe('Duo Web', function() {
             }));
         });
 
-        it('should return false if the event data is not properly formatted', function() {
+        test('should return false if the event data is not properly formatted', function() {
             assert.isFalse(Duo._isDuoMessage({
                 origin: 'https://example.com',
                 data: 'buttercakes'
@@ -439,30 +452,35 @@ describe('Duo Web', function() {
         });
     });
 
-    describe('open Duo window', function() {
-        beforeEach(function() {
+    suite('open Duo window', function() {
+        setup(function() {
             Duo.init({
                 host: 'example.com',
             });
 
-            const OriginalMessageEvent = window.MessageEvent;
-            sinon.stub(window, "MessageEvent").callsFake(function(type, args) {
-                if (type === "message") {
-                    args.origin = 'https://example.com';
-                    return new OriginalMessageEvent(type, args);
-                } else {
-                    return new OriginalMessageEvent(type, args);
-                }
-            });
+             const OriginalMessageEvent = window.MessageEvent;
+             sinon.stub(window, "MessageEvent", function(type, args) {
+                 if (type === "message") {
+                     args.origin = 'https://example.com';
+                 }
+
+                 return new OriginalMessageEvent(type, args);
+             });
 
             sinon.stub(window, "open");
         });
 
-        afterEach(function() {
+        teardown(function() {
             window.MessageEvent.restore();
             window.open.restore();
         });
 
+        /**
+         * Checks if window.open has been called with a URL.
+         * @param  {String}     expectedUrl
+         * @param  {Boolean}   didOpen: did it open or not?
+         * @param  {Function}  done: `done` callback provided by Mocha
+         */
         function _checkWindowOpenness(expectedUrl, didOpen, done) {
             window.postMessage('DUO_OPEN_WINDOW|' + expectedUrl, '*');
 
@@ -481,100 +499,109 @@ describe('Duo Web', function() {
             }, 0);
         }
 
+        /**
+         * Custom assertion if window has been opened with URL.
+         * @param  {String}     expectedUrl
+         */
         function assertWindowDidOpen(expectedUrl, done) {
             _checkWindowOpenness(expectedUrl, true, done);
         }
 
+        /**
+         * Custom assertion if window has been opend with URL.
+         * @param  {String}     expectedUrl
+         * @param  {Boolean}   didOpen: did it open or not?
+         */
         function assertWindowDidNotOpen(expectedUrl, done) {
             _checkWindowOpenness(expectedUrl, false, done);
         }
 
-        it('should attempt window open for duotrustedendpoints://', function(done) {
+        test('should attempt window open for duotrustedendpoints://', function(done) {
             assertWindowDidOpen('duotrustedendpoints://duo.com?x=1&y=2', done);
         });
 
-        it('should allow https://duo.com', function(done) {
+        test('should allow https://duo.com', function(done) {
             assertWindowDidOpen("https://duo.com", done);
         });
-        it('should allow https://something.duo.com', function(done) {
+        test('should allow https://something.duo.com', function(done) {
             assertWindowDidOpen("https://something.duo.com", done);
         });
-        it('should allow https://something.duo.com/', function(done) {
+        test('should allow https://something.duo.com/', function(done) {
             assertWindowDidOpen("https://something.duo.com/", done);
         });
-        it('should allow https://something.duo.com/?akey=123', function(done) {
+        test('should allow https://something.duo.com/?akey=123', function(done) {
             assertWindowDidOpen("https://something.duo.com/?akey=123", done);
         });
-        it('should allow https://something.duo.com?akey=123', function(done) {
+        test('should allow https://something.duo.com?akey=123', function(done) {
             assertWindowDidOpen("https://something.duo.com?akey=123", done);
         });
-        it('should allow https://abc-123.something.else.duo.com?akey=123', function(done) {
+        test('should allow https://abc-123.something.else.duo.com?akey=123', function(done) {
             assertWindowDidOpen("https://abc-123.something.else.duo.com?akey=123", done);
         });
 
-        it('should allow valid https://duosecurity.com', function(done) {
+        test('should allow valid https://duosecurity.com', function(done) {
             assertWindowDidOpen("https://duosecurity.com", done);
         });
-        it('should allow https://something.duosecurity.com', function(done) {
+        test('should allow https://something.duosecurity.com', function(done) {
             assertWindowDidOpen("https://something.duosecurity.com", done);
         });
-        it('should allow https://something.duosecurity.com/', function(done) {
+        test('should allow https://something.duosecurity.com/', function(done) {
             assertWindowDidOpen("https://something.duosecurity.com/", done);
         });
-        it('should allow https://something.duosecurity.com/?akey=123', function(done) {
+        test('should allow https://something.duosecurity.com/?akey=123', function(done) {
             assertWindowDidOpen("https://something.duosecurity.com/?akey=123", done);
         });
-        it('should allow https://something.duosecurity.com?akey=123', function(done) {
+        test('should allow https://something.duosecurity.com?akey=123', function(done) {
             assertWindowDidOpen("https://something.duosecurity.com?akey=123", done);
         });
-        it('should allow https://abc-123.something.else.duosecurity.com?akey=123', function(done) {
+        test('should allow https://abc-123.something.else.duosecurity.com?akey=123', function(done) {
             assertWindowDidOpen("https://abc-123.something.else.duosecurity.com?akey=123", done);
         });
 
-        it('should allow https://duomobile.s3-us-west-1.amazonaws.com', function(done) {
+        test('should allow https://duomobile.s3-us-west-1.amazonaws.com', function(done) {
             assertWindowDidOpen("https://duomobile.s3-us-west-1.amazonaws.com", done);
         });
-        it('should allow https://something.duomobile.s3-us-west-1.amazonaws.com', function(done) {
+        test('should allow https://something.duomobile.s3-us-west-1.amazonaws.com', function(done) {
             assertWindowDidOpen("https://something.duomobile.s3-us-west-1.amazonaws.com", done);
         });
-        it('should allow https://something.duomobile.s3-us-west-1.amazonaws.com/', function(done) {
+        test('should allow https://something.duomobile.s3-us-west-1.amazonaws.com/', function(done) {
             assertWindowDidOpen("https://something.duomobile.s3-us-west-1.amazonaws.com/", done);
         });
-        it('should allow https://something.duomobile.s3-us-west-1.amazonaws.com/?akey=123', function(done) {
+        test('should allow https://something.duomobile.s3-us-west-1.amazonaws.com/?akey=123', function(done) {
             assertWindowDidOpen("https://something.duomobile.s3-us-west-1.amazonaws.com/?akey=123", done);
         });
-        it('should allow https://something.duomobile.s3-us-west-1.amazonaws.com?akey=123', function(done) {
+        test('should allow https://something.duomobile.s3-us-west-1.amazonaws.com?akey=123', function(done) {
             assertWindowDidOpen("https://something.duomobile.s3-us-west-1.amazonaws.com?akey=123", done);
         });
-        it('should allow https://abc-123.something.else.duomobile.s3-us-west-1.amazonaws.com?akey=123', function(done) {
+        test('should allow https://abc-123.something.else.duomobile.s3-us-west-1.amazonaws.com?akey=123', function(done) {
             assertWindowDidOpen("https://abc-123.something.else.duomobile.s3-us-west-1.amazonaws.com?akey=123", done);
         });
 
-        it('should prevent javascript:alert(1)', function(done) {
+        test('should prevent javascript:alert(1)', function(done) {
             assertWindowDidNotOpen("javascript:alert(1)", done);
         });
-        it('should prevent http://duo.com', function(done) {
+        test('should prevent http://duo.com', function(done) {
             assertWindowDidNotOpen("http://duo.com/", done);
         });
-        it('should prevent https://attackers.site/?fake=duo.com', function(done) {
+        test('should prevent https://attackers.site/?fake=duo.com', function(done) {
             assertWindowDidNotOpen("https://attackers.site/?fake=duo.com", done);
         });
-        it('should prevent https://duo.co/', function(done) {
+        test('should prevent https://duo.co/', function(done) {
             assertWindowDidNotOpen("https://duo.co/", done);
         });
-        it('should prevent https://duo.com.attack.io/', function(done) {
+        test('should prevent https://duo.com.attack.io/', function(done) {
             assertWindowDidNotOpen("https://duo.com.attack.io/", done);
         });
-        it('should prevent https://attack.io/duo.com', function(done) {
+        test('should prevent https://attack.io/duo.com', function(done) {
             assertWindowDidNotOpen("https://attack.io/duo.com", done);
         });
-        it('should prevent https://attack.io?maybe=duo.com', function(done) {
+        test('should prevent https://attack.io?maybe=duo.com', function(done) {
             assertWindowDidNotOpen("https://attack.io?maybe=duo.com", done);
         });
-        it('should prevent https://iamnotduo.com/', function(done) {
+        test('should prevent https://iamnotduo.com/', function(done) {
             assertWindowDidNotOpen("https://iamnotduo.com/", done);
         });
-        it('should prevent https://i.totally.am.notduo.com/', function(done) {
+        test('should prevent https://i.totally.am.notduo.com/', function(done) {
             assertWindowDidNotOpen("https://i.totally.am.notduo.com/", done);
         });
 
